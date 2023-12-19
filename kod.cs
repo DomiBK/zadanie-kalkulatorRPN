@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 
 namespace Calculator
 {
@@ -121,3 +119,4 @@ namespace Calculator
        }
    }
 }
+
