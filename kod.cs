@@ -1,123 +1,59 @@
 using System;
 using System.Collections.Generic;
 
-namespace Calculator
+namespace RPNCalculator
 {
-   public class RPNCalculator
-   {
-       private MyStack<string> operatorStack;
-       private MyQueue<string> outputQueue;
+    public class RPNCalculator
+    {
+        private Stack<string> stack = new Stack<string>();
+        
+        public double Calculate(string expression)
+        {
+            var tokens = expression.Split(' ');
 
-       public RPNCalculator()
-       {
-           operatorStack = new MyStack<string>(100);
-           outputQueue = new MyQueue<string>(100);
-       }
+            foreach (var token in tokens)
+            {
+                if (IsOperator(token))
+                {
+                    var rightOperand = double.Parse(stack.Pop());
+                    var leftOperand = double.Parse(stack.Pop());
+                    var result = ApplyOperator(leftOperand, rightOperand, token);
+                    stack.Push(result.ToString());
+                }
+                else
+                {
+                    stack.Push(token);
+                }
+            }
 
-       public void EvaluateExpression()
-       {
-           Console.WriteLine("Enter a mathematical expression:");
-           string expression = Console.ReadLine();
+            return double.Parse(stack.Pop());
+        }
 
-           string[] tokens = expression.Split(' ');
+        private bool IsOperator(string token)
+        {
+            return token == "+" || token == "-" || token == "*" || token == "/" || token == "^";
+        }
 
-           foreach (string token in tokens)
-           {
-               if (IsNumber(token))
-               {
-                  outputQueue.Push(token);
-               }
-               else if (IsOperator(token))
-               {
-                  HandleOperator(token);
-               }
-           }
-
-           while (!operatorStack.IsEmpty())
-           {
-               outputQueue.Push(operatorStack.Pop());
-           }
-
-           double result = EvaluateRPNExpression();
-
-           Console.WriteLine($"Result: {result}");
-       }
-
-       private void HandleOperator(string operatorToken)
-       {
-           while (!operatorStack.IsEmpty() && IsHigherOrEqualPriority(operatorStack.Top(), operatorToken))
-           {
-               outputQueue.Push(operatorStack.Pop());
-           }
-
-           operatorStack.Push(operatorToken);
-       }
-
-       private double EvaluateRPNExpression()
-       {
-           MyStack<double> operandStack = new MyStack<double>(100);
-
-           while (!outputQueue.IsEmpty())
-           {
-               string token = outputQueue.Pop();
-
-               if (IsNumber(token))
-               {
-                  operandStack.Push(double.Parse(token));
-               }
-               else if (IsOperator(token))
-               {
-                  double operand2 = operandStack.Pop();
-                  double operand1 = operandStack.Pop();
-                  double result = PerformOperation(token, operand1, operand2);
-                  operandStack.Push(result);
-               }
-           }
-
-           if (operandStack.Size() != 1)
-           {
-               throw new Exception("Invalid expression.");
-           }
-
-           return operandStack.Pop();
-       }
-
-       private double PerformOperation(string operatorToken, double operand1, double operand2)
-       {
-           switch (operatorToken)
-           {
-               case "+":
-                  return operand1 + operand2;
-               case "-":
-                  return operand1 - operand2;
-               default:
-                  throw new Exception("Invalid operator.");
-           }
-       }
-
-       private bool IsNumber(string token)
-       {
-           double number;
-           return double.TryParse(token, out number);
-       }
-
-       private bool IsOperator(string token)
-       {
-           return token == "+" || token == "-";
-       }
-
-       private bool IsHigherOrEqualPriority(string operator1, string operator2)
-       {
-           return false;
-       }
-   }
-
-   public class Program
-   {
-       public static void Main()
-       {
-           RPNCalculator calculator = new RPNCalculator();
-           calculator.EvaluateExpression();
-       }
-   }
+        private double ApplyOperator(double leftOperand, double rightOperand, string op)
+        {
+            switch (op)
+            {
+                case "+": return leftOperand + rightOperand;
+                case "-": return leftOperand - rightOperand;
+                case "*": return leftOperand * rightOperand;
+                case "/": return leftOperand / rightOperand;
+                case "^": return Math.Pow(leftOperand, rightOperand);
+                default: throw new Exception("Invalid operator.");
+            }
+        }
+    }
 }
+
+public static void Main()
+{
+    var calculator = new RPNCalculator();
+    var result = calculator.Calculate("3 4 + 2 * 1 +");
+    Console.WriteLine(result);  // Output: 15
+}
+
+
