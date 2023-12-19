@@ -1,123 +1,123 @@
 using System;
 using System.Collections.Generic;
 
-namespace Kalkulator
+namespace Calculator
 {
-  public class KalkulatorRPN
-  {
-      private Stos<string> stosOperatorow;
-      private Kolejka<string> kolejkaWynikow;
+   public class RPNCalculator
+   {
+       private MyStack<string> operatorStack;
+       private MyQueue<string> outputQueue;
 
-      public KalkulatorRPN()
-      {
-          stosOperatorow = new Stos<string>(100);
-          kolejkaWynikow = new Kolejka<string>(100);
-      }
+       public RPNCalculator()
+       {
+           operatorStack = new MyStack<string>(100);
+           outputQueue = new MyQueue<string>(100);
+       }
 
-      public void ObliczWyrazenie()
-      {
-          Console.WriteLine("Wprowadź wyrażenie matematyczne:");
-          string wyrazenie = Console.ReadLine();
+       public void EvaluateExpression()
+       {
+           Console.WriteLine("Enter a mathematical expression:");
+           string expression = Console.ReadLine();
 
-          string[] tokeny = wyrazenie.Split(' ');
+           string[] tokens = expression.Split(' ');
 
-          foreach (string token in tokeny)
-          {
-              if (CzyJestLiczba(token))
-              {
-                kolejkaWynikow.Dodaj(token);
-              }
-              else if (CzyJestOperator(token))
-              {
-                ObsluzOperator(token);
-              }
-          }
+           foreach (string token in tokens)
+           {
+               if (IsNumber(token))
+               {
+                  outputQueue.Push(token);
+               }
+               else if (IsOperator(token))
+               {
+                  HandleOperator(token);
+               }
+           }
 
-          while (!stosOperatorow.CzyPusty())
-          {
-              kolejkaWynikow.Dodaj(stosOperatorow.Pop());
-          }
+           while (!operatorStack.IsEmpty())
+           {
+               outputQueue.Push(operatorStack.Pop());
+           }
 
-          double wynik = ObliczWyrazenieRPN();
+           double result = EvaluateRPNExpression();
 
-          Console.WriteLine($"Wynik: {wynik}");
-      }
+           Console.WriteLine($"Result: {result}");
+       }
 
-      private void ObsluzOperator(string operatorToken)
-      {
-          while (!stosOperatorow.CzyPusty() && CzyMaWyzszyAleJednakRownyPriorytet(stosOperatorow.Top(), operatorToken))
-          {
-              kolejkaWynikow.Dodaj(stosOperatorow.Pop());
-          }
+       private void HandleOperator(string operatorToken)
+       {
+           while (!operatorStack.IsEmpty() && IsHigherOrEqualPriority(operatorStack.Top(), operatorToken))
+           {
+               outputQueue.Push(operatorStack.Pop());
+           }
 
-          stosOperatorow.Dodaj(operatorToken);
-      }
+           operatorStack.Push(operatorToken);
+       }
 
-      private double ObliczWyrazenieRPN()
-      {
-          Stos<double> stosOperandow = new Stos<double>(100);
+       private double EvaluateRPNExpression()
+       {
+           MyStack<double> operandStack = new MyStack<double>(100);
 
-          while (!kolejkaWynikow.CzyPusty())
-          {
-              string token = kolejkaWynikow.Pop();
+           while (!outputQueue.IsEmpty())
+           {
+               string token = outputQueue.Pop();
 
-              if (CzyJestLiczba(token))
-              {
-                stosOperandow.Dodaj(double.Parse(token));
-              }
-              else if (CzyJestOperator(token))
-              {
-                double operand2 = stosOperandow.Pop();
-                double operand1 = stosOperandow.Pop();
-                double wynik = WykonajOperacje(token, operand1, operand2);
-                stosOperandow.Dodaj(wynik);
-              }
-          }
+               if (IsNumber(token))
+               {
+                  operandStack.Push(double.Parse(token));
+               }
+               else if (IsOperator(token))
+               {
+                  double operand2 = operandStack.Pop();
+                  double operand1 = operandStack.Pop();
+                  double result = PerformOperation(token, operand1, operand2);
+                  operandStack.Push(result);
+               }
+           }
 
-          if (stosOperandow.Rozmiar() != 1)
-          {
-              throw new Exception("Nieprawidłowe wyrażenie.");
-          }
+           if (operandStack.Size() != 1)
+           {
+               throw new Exception("Invalid expression.");
+           }
 
-          return stosOperandow.Pop();
-      }
+           return operandStack.Pop();
+       }
 
-      private double WykonajOperacje(string operatorToken, double operand1, double operand2)
-      {
-          switch (operatorToken)
-          {
-              case "+":
-                return operand1 + operand2;
-              case "-":
-                return operand1 - operand2;
-              default:
-                throw new Exception("Nieprawidłowy operator.");
-          }
-      }
+       private double PerformOperation(string operatorToken, double operand1, double operand2)
+       {
+           switch (operatorToken)
+           {
+               case "+":
+                  return operand1 + operand2;
+               case "-":
+                  return operand1 - operand2;
+               default:
+                  throw new Exception("Invalid operator.");
+           }
+       }
 
-      private bool CzyJestLiczba(string token)
-      {
-          double liczba;
-          return double.TryParse(token, out liczba);
-      }
+       private bool IsNumber(string token)
+       {
+           double number;
+           return double.TryParse(token, out number);
+       }
 
-      private bool CzyJestOperator(string token)
-      {
-          return token == "+" || token == "-";
-      }
+       private bool IsOperator(string token)
+       {
+           return token == "+" || token == "-";
+       }
 
-      private bool CzyMaWyzszyAleJednakRownyPriorytet(string operator1, string operator2)
-      {
-          return false;
-      }
-  }
+       private bool IsHigherOrEqualPriority(string operator1, string operator2)
+       {
+           return false;
+       }
+   }
 
-  public class Program
-  {
-      public static void Main()
-      {
-          KalkulatorRPN kalkulator = new KalkulatorRPN();
-          kalkulator.ObliczWyrazenie();
-      }
-  }
+   public class Program
+   {
+       public static void Main()
+       {
+           RPNCalculator calculator = new RPNCalculator();
+           calculator.EvaluateExpression();
+       }
+   }
 }
