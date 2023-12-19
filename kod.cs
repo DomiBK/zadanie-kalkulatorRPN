@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-
 namespace RPNCalculator
 {
     public class RPNCalculator
     {
         private Stack<string> stack = new Stack<string>();
-        
+
         public double Calculate(string expression)
         {
             var tokens = expression.Split(' ');
@@ -31,7 +28,7 @@ namespace RPNCalculator
 
         private bool IsOperator(string token)
         {
-            return token == "+" || token == "-" || token == "*" || token == "/" || token == "^";
+            return token == "+" || token == "-";
         }
 
         private double ApplyOperator(double leftOperand, double rightOperand, string op)
@@ -40,20 +37,26 @@ namespace RPNCalculator
             {
                 case "+": return leftOperand + rightOperand;
                 case "-": return leftOperand - rightOperand;
-                case "*": return leftOperand * rightOperand;
-                case "/": return leftOperand / rightOperand;
-                case "^": return Math.Pow(leftOperand, rightOperand);
                 default: throw new Exception("Invalid operator.");
             }
         }
+        //wyskakuje mi bład "Input string was not in a correct format." wszystko sie zmienia jak wpisze dane talk jak na dole
+
+        public static void Main()
+        {
+            var calculator = new RPNCalculator();
+            var result = calculator.Calculate("3 4 2 + -");//-3
+            Console.WriteLine(result);
+        }
+
+
+        /*public static void Main()
+        {
+            Console.WriteLine("podaj wyrazebnie do oblicznia");
+            var calculator = new RPNCalculator();
+            var dane = Console.ReadLine();
+            var result = calculator.Calculate("$dane");
+            Console.WriteLine(result);
+        }*/
     }
 }
-
-public static void Main()
-{
-    var calculator = new RPNCalculator();
-    var result = calculator.Calculate("3 4 + 2 * 1 +");
-    Console.WriteLine(result);  // Output: 15
-}
-
-
